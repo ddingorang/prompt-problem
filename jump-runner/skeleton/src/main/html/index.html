@@ -23,6 +23,16 @@
     const jumpPower = -14;
     const player = { x: 60, y: groundY - 40, w: 30, h: 40, vy: 0, onGround: true };
     let obstacles = [];
+
+    // SVG 문자열을 그대로 이미지로 만들어 쓴다. 외부 파일이 필요 없다.
+    function sprite(svg) {
+      const image = new Image();
+      image.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+      return image;
+    }
+
+    const playerImage = sprite('<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40"><rect x="5" y="9" width="20" height="21" rx="6" fill="#4ade80"/><rect x="0" y="14" width="7" height="5" rx="2.5" fill="#22c55e"/><rect x="23" y="14" width="7" height="5" rx="2.5" fill="#22c55e"/><rect x="7" y="29" width="6" height="11" rx="3" fill="#22c55e"/><rect x="17" y="29" width="6" height="11" rx="3" fill="#22c55e"/><rect x="9" y="0" width="13" height="11" rx="5" fill="#86efac"/><circle cx="17" cy="5" r="2.6" fill="#0f172a"/></svg>');
+    const spikeImage = sprite('<svg xmlns="http://www.w3.org/2000/svg" width="25" height="40" viewBox="0 0 25 40" preserveAspectRatio="none"><path d="M12.5 0 L25 40 L0 40 Z" fill="#f87171"/><path d="M12.5 0 L12.5 40 L0 40 Z" fill="#ef4444"/></svg>');
     let score = 0;
     let gameOver = false;
 
@@ -60,14 +70,14 @@
         player.onGround = true;
       }
 
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
       ctx.fillStyle = '#94a3b8';
       ctx.fillRect(0, groundY, canvas.width, 4);
-      ctx.fillStyle = '#4ade80';
-      ctx.fillRect(player.x, player.y, player.w, player.h);
-      ctx.fillStyle = '#f87171';
+      ctx.drawImage(playerImage, player.x, player.y, player.w, player.h);
       obstacles.forEach(obstacle => {
         obstacle.x -= obstacle.speed;
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        ctx.drawImage(spikeImage, obstacle.x, obstacle.y, obstacle.w, obstacle.h);
         if (obstacle.x < player.x + player.w && obstacle.x + obstacle.w > player.x && obstacle.y < player.y + player.h && obstacle.y + obstacle.h > player.y) gameOver = true;
       });
 
