@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>점프 러너 게임</title>
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; font-family: sans-serif; background: #f0f0f0; }
+    canvas { background: #222; border-radius: 8px; margin-top: 12px; }
+    #score { font-size: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="500"></canvas>
+  <p id="score">점수: 0</p>
+  <p>스페이스바로 점프하세요. (화면을 클릭한 뒤 조작)</p>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
+    const groundY = 420;
+    const gravity = 0.8;
+    const jumpPower = -14;
+    const player = { x: 60, y: groundY - 40, w: 30, h: 40, vy: 0, onGround: true };
+    let obstacles = [];
+    let score = 0;
+    let gameOver = false;
+
+    document.addEventListener('keydown', event => {
+      if (event.key !== ' ' && event.key !== 'ArrowUp') return;
+      event.preventDefault();
+      if (gameOver || !player.onGround) return;
+      player.vy = jumpPower;
+      player.onGround = false;
+    });
+
+    function spawnObstacle() {
+      const h = 30 + Math.random() * 20;
+      obstacles.push({ x: canvas.width, y: groundY - h, w: 25, h: h, speed: 5 });
+    }
+
+    setInterval(spawnObstacle, 1400);
+
+    function loop() {
+      if (gameOver) {
+        ctx.fillStyle = 'white';
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('게임 오버!', 200, 250);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      player.vy += gravity;
+      player.y += player.vy;
+      if (player.y >= groundY - player.h) {
+        player.y = groundY - player.h;
+        player.vy = 0;
+        player.onGround = true;
+      }
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(0, groundY, canvas.width, 4);
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+      ctx.fillStyle = '#f87171';
+      obstacles.forEach(obstacle => {
+        obstacle.x -= obstacle.speed;
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+        if (obstacle.x < player.x + player.w && obstacle.x + obstacle.w > player.x && obstacle.y < player.y + player.h && obstacle.y + obstacle.h > player.y) gameOver = true;
+      });
+
+      const obstacleCount = obstacles.length;
+      obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.w > 0);
+      score += obstacleCount - obstacles.length;
+      scoreEl.textContent = `점수: ${score}`;
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
