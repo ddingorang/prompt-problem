@@ -13,11 +13,15 @@
 
 ```
 <slug>/
-├── problem.yml      # title: "문제 제목" (필수)
+├── problem.yml      # title: "문제 제목" (필수), language: "java" | "python" (없으면 java)
 ├── spec.md          # 문제 명세 전문 (필수)
 └── skeleton/        # 시작 코드. 하위 모든 파일이 스켈레톤이 된다 (1개 이상 필수)
-    └── src/main/java/Main.java
+    ├── src/main/java/Main.java        # java 문제 (python은 src/main/python/*.py)
+    └── src/test/...                   # 채점용 테스트. 사용자에게 노출되지 않는다
 ```
+
+- 문제 하나의 언어는 하나다. `type: "game"` 문제는 채점을 하지 않으므로 language를 적지 않는다.
+- python 문제의 테스트는 pytest 형식(`src/test/python/test_*.py`)으로 작성한다.
 
 형식이 안 맞는 디렉토리가 하나라도 있으면 그 커밋 전체가 반영되지 않는다.
 백엔드 로그에 실패 사유가 남고, 수정 커밋을 올리면 다음 폴링 때 자동 반영된다.
