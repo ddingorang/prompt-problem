@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>보스 공략 게임</title>
+  <style>
+    body { display: flex; flex-direction: column; align-items: center; font-family: sans-serif; background: #f0f0f0; }
+    canvas { background: #222; border-radius: 8px; margin-top: 12px; }
+    #hp { font-size: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="500"></canvas>
+  <p id="hp">보스 HP: 20 / 20</p>
+  <p>← → 방향키로 이동, 스페이스바로 발사하세요. (화면을 클릭한 뒤 조작)</p>
+  <script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const hpEl = document.getElementById('hp');
+    const player = { x: 180, y: 460, w: 40, h: 20, speed: 6 };
+    const boss = { x: 150, y: 60, w: 100, h: 40, speed: 1.2, hp: 20, maxHp: 20 };
+    let bullets = [];
+    let cleared = false;
+    const keys = {};
+
+    document.addEventListener('keydown', event => {
+      keys[event.key] = true;
+      if (event.key !== ' ') return;
+      event.preventDefault();
+      if (event.repeat || cleared) return;
+      bullets.push({ x: player.x + player.w / 2 - 2, y: player.y, w: 4, h: 12, speed: 10 });
+    });
+    document.addEventListener('keyup', event => { keys[event.key] = false; });
+
+    function loop() {
+      if (cleared) {
+        ctx.fillStyle = 'white';
+        ctx.font = '30px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('보스 격파!', 200, 250);
+        return;
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (keys.ArrowLeft) player.x -= player.speed;
+      if (keys.ArrowRight) player.x += player.speed;
+      player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+
+      boss.x += boss.speed;
+      if (boss.x <= 0 || boss.x + boss.w >= canvas.width) boss.speed = -boss.speed;
+      boss.x = Math.max(0, Math.min(canvas.width - boss.w, boss.x));
+
+      ctx.fillStyle = '#f87171';
+      ctx.fillRect(20, 24, 360 * (boss.hp / boss.maxHp), 12);
+      ctx.strokeStyle = '#ffffff';
+      ctx.strokeRect(20, 24, 360, 12);
+
+      ctx.fillStyle = '#a78bfa';
+      ctx.fillRect(boss.x, boss.y, boss.w, boss.h);
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(player.x, player.y, player.w, player.h);
+
+      ctx.fillStyle = '#fbbf24';
+      bullets.forEach(bullet => {
+        bullet.y -= bullet.speed;
+        ctx.fillRect(bullet.x, bullet.y, bullet.w, bullet.h);
+        if (bullet.x < boss.x + boss.w && bullet.x + bullet.w > boss.x && bullet.y < boss.y + boss.h && bullet.y + bullet.h > boss.y) {
+          bullet.used = true;
+          boss.hp -= 1;
+        }
+      });
+      bullets = bullets.filter(bullet => !bullet.used && bullet.y + bullet.h > 0);
+
+      if (boss.hp <= 0) {
+        boss.hp = 0;
+        cleared = true;
+      }
+      hpEl.textContent = `보스 HP: ${boss.hp} / ${boss.maxHp}`;
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
